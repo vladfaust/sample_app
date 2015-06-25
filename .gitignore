@@ -15,3 +15,9 @@
 /log/*
 !/log/.keep
 /tmp
+
+# Ignore Idea files
+/.idea/*
+
+# Some unnecessary files
+Gemfile.lock
