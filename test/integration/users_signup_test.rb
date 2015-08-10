@@ -28,5 +28,11 @@ class UsersSignupTest < ActionDispatch::IntegrationTest
     assert_template 'users/show'
     assert_not flash.nil?
     assert is_logged_in?
+
+    delete logout_path
+    follow_redirect!
+
+    assert_select "a[href=?]", login_path
+    assert_select "a[href=?]", logout_path,      count: 0
   end
 end
