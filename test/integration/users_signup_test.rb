@@ -1,4 +1,4 @@
-require 'test_helper'
+require 'test_helper.rb.rb'
 
 class UsersSignupTest < ActionDispatch::IntegrationTest
 
