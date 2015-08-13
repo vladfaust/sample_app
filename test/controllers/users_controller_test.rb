@@ -44,7 +44,7 @@ class UsersControllerTest < ActionController::TestCase
     assert_no_difference 'User.count' do
       delete :destroy, id: @user
     end
-    assert_redirected_to root_url
+    assert_redirected_to login_url
   end
 
   test 'should redirect destroy when not admin' do
