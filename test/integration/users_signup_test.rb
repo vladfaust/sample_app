@@ -1,6 +1,9 @@
 require 'test_helper.rb.rb'
 
 class UsersSignupTest < ActionDispatch::IntegrationTest
+  def setup
+    ActionMailer::Base.deliveries.clear
+  end
 
   test 'invalid signup information' do
     get signup_path
@@ -15,24 +18,38 @@ class UsersSignupTest < ActionDispatch::IntegrationTest
     assert_select 'div.alert-danger.alert'
   end
 
-  test 'valid signup information' do
+  test 'valid signup information witch account activation' do
     get signup_path
 
     assert_difference 'User.count', 1 do
-      post_via_redirect users_path, user: {   name: 'Example User',
-                                              email: 'user@example.com',
-                                              password: 'password',
-                                              password_confirmation: 'password' }
+      post users_path, user: {  name: 'Example User',
+                                email: 'user@example.com',
+                                password: 'password',
+                                password_confirmation: 'password' }
     end
 
-    assert_template 'users/show'
-    assert_not flash.nil?
-    assert is_logged_in?
+    assert_equal ActionMailer::Base.deliveries.size, 1
+    user = assigns(:user)
+    assert_not user.activated?
 
-    delete logout_path
+    # Try to log in before activation
+    log_in_as user
+    assert_not is_logged_in?
+
+    # Valid token, wrong email
+    get edit_account_activation_path(user.activation_token, email: 'wrong')
+    assert_not is_logged_in?
+
+    # Invalid token, right email
+    get edit_account_activation_path('invalid token', email: user.email)
+    assert_not is_logged_in?
+
+    # Valid activation
+    get edit_account_activation_path(user.activation_token, email: user.email)
+    assert user.reload.activated?
+
     follow_redirect!
-
-    assert_select "a[href=?]", login_path
-    assert_select "a[href=?]", logout_path,      count: 0
+    assert_template 'users/show'
+    assert is_logged_in?
   end
 end
